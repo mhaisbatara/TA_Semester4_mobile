@@ -18,56 +18,62 @@ const UserSchema = new mongoose.Schema({
   email: String,
   password: String,
   role: String
-});
+}, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
 
+// =======================
 // 🔐 LOGIN
+// =======================
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(400).json({ message: 'User tidak ditemukan' });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    return res.status(400).json({ message: 'Password salah' });
-  }
-
-  // 🔥 VALIDASI ROLE
-  if (user.role !== 'user') {
-    return res.status(403).json({ message: 'Hanya user yang boleh login' });
-  }
-
-  res.json({
-    message: 'Login berhasil',
-    user: {
-      name: user.name,
-      email: user.email,
-      role: user.role
+    if (!user) {
+      return res.status(400).json({ message: 'User tidak ditemukan' });
     }
-  });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Password salah' });
+    }
+
+    if (user.role !== 'user') {
+      return res.status(403).json({ message: 'Hanya user yang boleh login' });
+    }
+
+    res.json({
+      message: 'Login berhasil',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
+// =======================
 // 📝 REGISTER
+// =======================
 app.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
-
   try {
-    // cek email sudah ada atau belum
+    const { name, email, password } = req.body;
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email sudah terdaftar' });
     }
 
-    // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // simpan user baru (role otomatis user)
     const newUser = new User({
       name,
       email,
@@ -84,7 +90,21 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// =======================
+// 📊 GET ALL USERS (INI YANG KAMU BUTUH)
+// =======================
+app.get('/users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password'); // password disembunyikan
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// =======================
 // ▶️ RUN SERVER
+// =======================
 app.listen(5000, () => {
   console.log('Server jalan di http://localhost:5000');
 });

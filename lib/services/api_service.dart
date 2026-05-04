@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // ⚠️ Emulator Android pakai ini
+
   static const String baseUrl = "http://10.0.2.2:5000";
 
-  // 🔐 LOGIN
+  //  LOGIN
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
@@ -30,7 +30,7 @@ class ApiService {
     }
   }
 
-  // 📝 REGISTER
+  //  REGISTER
   static Future<Map<String, dynamic>> register(
       String name, String email, String password) async {
     try {

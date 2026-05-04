@@ -1,18 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart'; // 🔥 penting (untuk web detect)
-import 'dart:io'; // 🔥 untuk android detect
+import 'package:flutter/foundation.dart';
+import 'dart:io';
 
 class ApiService {
 
-  // 🔥 AUTO BASE URL
+  // 🔥 GANTI INI DENGAN IP LAPTOP KAMU
+  static const String localIP = "192.168.0.138";
+
+  // 🔥 AUTO BASE URL (WEB + EMULATOR + HP)
   static String get baseUrl {
     if (kIsWeb) {
-      return "http://localhost:5000"; // ✅ untuk Chrome
+      return "http://localhost:5000"; // 🌐 Chrome
     } else if (Platform.isAndroid) {
-      return "http://10.0.2.2:5000"; // ✅ emulator Android
+      // 🔥 kalau emulator pakai 10.0.2.2
+      // 🔥 kalau HP asli pakai IP laptop
+      return "http://$localIP:5000";
     } else {
-      return "http://localhost:5000"; // fallback
+      return "http://$localIP:5000";
     }
   }
 
@@ -22,8 +27,12 @@ class ApiService {
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
+      final url = Uri.parse("$baseUrl/login");
+
+      print("LOGIN URL: $url"); // 🔥 debug
+
       final response = await http.post(
-        Uri.parse("$baseUrl/login"),
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": email,
@@ -31,13 +40,17 @@ class ApiService {
         }),
       );
 
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
       return {
         "status": response.statusCode,
         "data": jsonDecode(response.body),
       };
 
     } catch (e) {
-      print("LOGIN ERROR: $e"); // 🔥 debug
+      print("LOGIN ERROR: $e");
+
       return {
         "status": 500,
         "data": {"message": "Tidak bisa konek ke server"},
@@ -51,8 +64,12 @@ class ApiService {
   static Future<Map<String, dynamic>> register(
       String name, String email, String password) async {
     try {
+      final url = Uri.parse("$baseUrl/register");
+
+      print("REGISTER URL: $url"); // 🔥 debug
+
       final response = await http.post(
-        Uri.parse("$baseUrl/register"),
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "name": name,
@@ -61,13 +78,17 @@ class ApiService {
         }),
       );
 
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
       return {
         "status": response.statusCode,
         "data": jsonDecode(response.body),
       };
 
     } catch (e) {
-      print("REGISTER ERROR: $e"); // 🔥 debug
+      print("REGISTER ERROR: $e");
+
       return {
         "status": 500,
         "data": {"message": "Tidak bisa konek ke server"},

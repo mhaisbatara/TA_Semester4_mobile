@@ -1,11 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart'; // 🔥 penting (untuk web detect)
+import 'dart:io'; // 🔥 untuk android detect
 
 class ApiService {
 
-  static const String baseUrl = "http://10.0.2.2:5000";
+  // 🔥 AUTO BASE URL
+  static String get baseUrl {
+    if (kIsWeb) {
+      return "http://localhost:5000"; // ✅ untuk Chrome
+    } else if (Platform.isAndroid) {
+      return "http://10.0.2.2:5000"; // ✅ emulator Android
+    } else {
+      return "http://localhost:5000"; // fallback
+    }
+  }
 
-  //  LOGIN
+  // =======================
+  // 🔐 LOGIN
+  // =======================
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
@@ -22,7 +35,9 @@ class ApiService {
         "status": response.statusCode,
         "data": jsonDecode(response.body),
       };
+
     } catch (e) {
+      print("LOGIN ERROR: $e"); // 🔥 debug
       return {
         "status": 500,
         "data": {"message": "Tidak bisa konek ke server"},
@@ -30,7 +45,9 @@ class ApiService {
     }
   }
 
-  //  REGISTER
+  // =======================
+  // 📝 REGISTER
+  // =======================
   static Future<Map<String, dynamic>> register(
       String name, String email, String password) async {
     try {
@@ -48,7 +65,9 @@ class ApiService {
         "status": response.statusCode,
         "data": jsonDecode(response.body),
       };
+
     } catch (e) {
+      print("REGISTER ERROR: $e"); // 🔥 debug
       return {
         "status": 500,
         "data": {"message": "Tidak bisa konek ke server"},

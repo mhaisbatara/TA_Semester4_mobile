@@ -4,15 +4,39 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 
 const app = express();
+
+// =======================
+// 🔥 MIDDLEWARE
+// =======================
 app.use(express.json());
-app.use(cors());
 
-// 🔗 koneksi MongoDB
+// ✅ CORS FIX (biar bisa di Chrome & Emulator)
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+// tambahan header manual (biar makin aman)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
+// =======================
+// 🔗 KONEKSI MONGODB
+// =======================
 mongoose.connect('mongodb://127.0.0.1:27017/db_obesitas_workout')
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
-
-// 📁 schema user
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => console.log('❌ MongoDB Error:', err));
+  
+// =======================
+// 📁 SCHEMA USER
+// =======================
 const UserSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -41,6 +65,7 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Password salah' });
     }
 
+    // 🔥 ROLE VALIDATION
     if (user.role !== 'user') {
       return res.status(403).json({ message: 'Hanya user yang boleh login' });
     }
@@ -56,6 +81,7 @@ app.post('/login', async (req, res) => {
     });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -86,16 +112,17 @@ app.post('/register', async (req, res) => {
     res.json({ message: 'Registrasi berhasil' });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // =======================
-// 📊 GET ALL USERS (INI YANG KAMU BUTUH)
+// 📊 GET USERS
 // =======================
 app.get('/users', async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // password disembunyikan
+    const users = await User.find().select('-password');
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -103,8 +130,16 @@ app.get('/users', async (req, res) => {
 });
 
 // =======================
+// 🧪 TEST ROUTE (opsional)
+// =======================
+app.get('/', (req, res) => {
+  res.send('API berjalan 🚀');
+});
+
+// =======================
 // ▶️ RUN SERVER
 // =======================
-app.listen(5000, () => {
-  console.log('Server jalan di http://localhost:5000');
+const PORT = 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server jalan di http://localhost:${PORT}`);
 });

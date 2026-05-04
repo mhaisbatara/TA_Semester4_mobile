@@ -16,33 +16,59 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   bool isLoading = false;
+  bool obscurePassword = true;
 
   void handleLogin() async {
-    setState(() {
-      isLoading = true;
-    });
 
-    final result = await ApiService.login(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (result['status'] == 200) {
+    // 🔴 VALIDASI INPUT
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login berhasil")),
+        const SnackBar(content: Text("Email dan password wajib diisi")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final result = await ApiService.login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => DashboardPage()),
-      );
-    } else {
+      setState(() => isLoading = false);
+
+      // 🔍 DEBUG (LIHAT DI CONSOLE)
+      print("LOGIN RESULT: $result");
+
+      if (result['status'] == 200) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login berhasil")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardPage()),
+        );
+
+      } else {
+
+        final message = result['data']?['message'] ?? "Login gagal";
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+
+    } catch (e) {
+
+      setState(() => isLoading = false);
+
+      print("ERROR LOGIN: $e");
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['data']['message'])),
+        const SnackBar(content: Text("Terjadi error, cek koneksi/server")),
       );
     }
   }
@@ -50,16 +76,22 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF6F7FB),
       body: Center(
         child: SingleChildScrollView(
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(25),
             margin: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.green),
               color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                )
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -68,6 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                 const Icon(Icons.favorite, color: Colors.green, size: 50),
 
                 const SizedBox(height: 10),
+
                 const Text(
                   "SiObe",
                   style: TextStyle(
@@ -77,18 +110,21 @@ class _LoginPageState extends State<LoginPage> {
                 ),
 
                 const SizedBox(height: 10),
+
                 const Text(
                   "Masuk ke Dashboard",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                // EMAIL
+                // 🔹 EMAIL
                 TextField(
                   controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hintText: "Email",
+                    prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -97,26 +133,42 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 15),
 
-                // PASSWORD
+                // 🔹 PASSWORD
                 TextField(
                   controller: passwordController,
-                  obscureText: true,
+                  obscureText: obscurePassword,
                   decoration: InputDecoration(
                     hintText: "Password",
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                // BUTTON LOGIN
+                // 🔹 BUTTON LOGIN
                 ElevatedButton(
                   onPressed: isLoading ? null : handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xFF4CAF50),
                     minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
@@ -125,13 +177,13 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 10),
 
-                // REGISTER BUTTON
+                // 🔹 REGISTER
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => RegisterPage(),
+                        builder: (_) => const RegisterPage(),
                       ),
                     );
                   },

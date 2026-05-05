@@ -118,6 +118,55 @@ app.post('/register', async (req, res) => {
 });
 
 // =======================
+// 🤖 CHAT AI (SiObe) 
+// =======================
+const axios = require("axios");
+
+app.post('/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    console.log("📩 Message masuk:", message);
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer YOUR_API_KEY_HERE",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: "Kamu adalah AI kesehatan. Jawab dalam bahasa Indonesia dan beri saran olahraga."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    // 🔥 INI YANG PALING PENTING
+    const reply =
+      data?.choices?.[0]?.message?.content ??
+      "Maaf AI tidak merespon";
+
+    console.log("✅ Response dari Groq masuk");
+
+    res.json({ reply });
+
+  } catch (err) {
+    console.log("❌ ERROR:", err);
+    res.status(500).json({ message: "Error AI" });
+  }
+});
+
+// =======================
 // 📊 GET USERS
 // =======================
 app.get('/users', async (req, res) => {

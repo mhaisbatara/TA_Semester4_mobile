@@ -59,6 +59,35 @@ class ApiService {
   }
 
   // =======================
+// 🤖 CHAT AI
+// =======================
+static Future<Map<String, dynamic>> chat(String message) async {
+  try {
+    final response = await http.post(
+      Uri.parse("$baseUrl/chat"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"message": message}),
+    );
+
+    print("CHAT STATUS: ${response.statusCode}");
+    print("CHAT BODY: ${response.body}");
+
+    return {
+      "status": response.statusCode,
+      "data": jsonDecode(response.body),
+    };
+
+  } catch (e) {
+    print("CHAT ERROR: $e");
+
+    return {
+      "status": 500,
+      "data": {"message": "Tidak bisa konek ke server"},
+    };
+  }
+}
+
+  // =======================
   // 📝 REGISTER
   // =======================
   static Future<Map<String, dynamic>> register(

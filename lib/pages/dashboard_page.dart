@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'login_page.dart';
 import 'bmi_page.dart';
+import 'chat_page.dart'; // 🔥 WAJIB untuk SiObe
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -22,9 +23,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void checkLogin() async {
     bool status = await AuthService.isLoggedIn();
-    setState(() {
-      isLogin = status;
-    });
+    if (mounted) {
+      setState(() {
+        isLogin = status;
+      });
+    }
   }
 
   void handleFeature(VoidCallback action) {
@@ -121,7 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // 🔥 HEADER SESUAI DESAIN
+  // 🔥 HEADER
   Widget headerSection() {
     return Container(
       width: double.infinity,
@@ -170,14 +173,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
           const SizedBox(height: 15),
 
-          // TITLE
           const Text(
             "Cek Risiko Obesitas Anda",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 10),
@@ -194,7 +193,9 @@ class _DashboardPageState extends State<DashboardPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => const BmiPage()));
+                context,
+                MaterialPageRoute(builder: (_) => const BmiPage()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
@@ -210,7 +211,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 10),
 
           OutlinedButton(
-            onPressed: () {},
+            onPressed: () => handleFeature(() {}),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(
@@ -222,7 +223,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
           const SizedBox(height: 20),
 
-          // GAMBAR (FIX ERROR)
+          // GAMBAR
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Image.asset(
@@ -249,14 +250,35 @@ class _DashboardPageState extends State<DashboardPage> {
         currentIndex: currentIndex,
         selectedItemColor: const Color(0xFF2E7D32),
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() => currentIndex = index);
+
+          if (index == 0) return;
 
           if (index == 1) {
             Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const BmiPage()));
-          } else if (index != 0) {
-            handleFeature(() {});
+              context,
+              MaterialPageRoute(builder: (_) => const BmiPage()),
+            );
+          } else if (index == 2) {
+            handleFeature(() {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Fitur Riwayat")),
+              );
+            });
+          } else if (index == 3) {
+            handleFeature(() {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ChatPage()),
+              );
+            });
+          } else if (index == 4) {
+            handleFeature(() {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Fitur Profil")),
+              );
+            });
           }
         },
         items: const [
@@ -294,8 +316,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         "Hitung index massa tubuh anda secara presisi berdasarkan berat, tinggi, dan usia",
                     onTap: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const BmiPage()));
+                        context,
+                        MaterialPageRoute(builder: (_) => const BmiPage()),
+                      );
                     },
                   ),
                   layananCard(

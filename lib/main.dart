@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/dashboard_public_page.dart';
+import 'pages/dashboard_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SiObe',
-      home: DashboardPublicPage(), // 🔥 langsung dashboard
+      home: DashboardPage(), // 🔥 langsung dashboard
     );
   }
 }
